@@ -1,0 +1,77 @@
+/*-
+ * ============LICENSE_START=======================================================
+ * openECOMP : SDN-C
+ * ================================================================================
+ * Copyright (C) 2017 AT&T Intellectual Property. All rights
+ * 						reserved.
+ * ================================================================================
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============LICENSE_END=========================================================
+ */
+
+{
+  "vpn-vame": ${allocate-vpn-resource-notification-input.vpn-data[0].vpn-name},
+  "vpn-id": ${allocate-vpn-resource-notification-input.vpn-data[0].vpn-id},
+  "vrf-details": [
+  ${repeat:allocate-vpn-resource-notification-input.vpn-data[0].vrf-information_length:
+    {
+      "vrf-export-details": [
+      ${repeat:allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].vrf-export-details_length:
+        {
+          "vrf-export": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].vrf-export-details[${2}].vrf-export}
+        }
+        }
+      ],
+      "vrf-name": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].vrf-name},
+      "vpe-name": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].vpe-name},
+      "vrf-import-details": [
+      ${repeat:allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].vrf-import-details_length:
+        {
+          "vrf-import": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].vrf-import-details[${2}].vrf-import}
+        }
+        }
+      ],
+      "apply-group-template": [
+      ${repeat:allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].apply-group-template_length:
+        {
+          "apply-group": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].apply-group-template[${2}].apply-group}
+        }
+        }
+      ],
+      "community-list": [
+      ${repeat:allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].community-list_length:
+        {
+          "member": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].community-list[${2}].name},
+          "name": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].community-list[${2}].member}
+        }
+        }
+      ],
+      "router-distinguisher": ${allocate-vpn-resource-notification-input.vpn-data[0].vrf-information[${1}].router-distinguisher}
+    }
+    }
+  ],
+  "spoke-routes": {
+    "route-target": ${allocate-vpn-resource-notification-input.vpn-data[0].spoke-route-target.route-target}
+  },
+  
+   "route-target-details": [
+  ${repeat:allocate-vpn-resource-notification-input.vpn-data[0].route-target-details_length:
+    {
+     "route-target": ${allocate-vpn-resource-notification-input.vpn-data[0].route-target-details[${1}].route-target},
+     "route-target-type": ${allocate-vpn-resource-notification-input.vpn-data[0].route-target-details[${1}].route-target-type}
+    }
+    }
+  ],
+  
+  "e2e-vpn-key": ${allocate-vpn-resource-notification-input.vpn-data[0].e2e-vpn-id}
+}

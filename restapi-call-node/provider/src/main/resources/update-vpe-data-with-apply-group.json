@@ -1,0 +1,53 @@
+/*-
+ * ============LICENSE_START=======================================================
+ * openECOMP : SDN-C
+ * ================================================================================
+ * Copyright (C) 2017 AT&T Intellectual Property. All rights
+ * 						reserved.
+ * ================================================================================
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============LICENSE_END=========================================================
+ */
+
+{
+  "vrf-export-details": [
+  ${repeat:restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.VrfExport_length:
+    {
+      "vrf-export": ${restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.VrfExport[${1}]}
+    }
+    }
+  ],
+  "vrf-import-details": [
+  ${repeat:restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.VrfImport_length:
+    {
+      "vrf-import": ${restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.VrfImport[${1}]}
+    }
+    }
+  ],
+  "apply-group-template": [
+  ${repeat:restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.ApplyGroup_length:
+    {
+      "apply-group": ${restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.ApplyGroup[${1}].ApplyGroup}
+    }
+    }
+  ],
+  "community-list": [
+  ${repeat:restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.CommunityList_length:
+    {
+      "member": ${restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.CommunityList[${1}].member},
+      "name": ${restapi-result.ApplyGroupResponse.ApplyGroupResponseData[0].VrfDetails.CommunityList[${1}].name}
+    }
+    }
+  ]
+}
+

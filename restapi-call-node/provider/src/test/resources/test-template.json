@@ -1,0 +1,57 @@
+/*-
+ * ============LICENSE_START=======================================================
+ * openECOMP : SDN-C
+ * ================================================================================
+ * Copyright (C) 2017 AT&T Intellectual Property. All rights
+ * 						reserved.
+ * ================================================================================
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============LICENSE_END=========================================================
+ */
+
+{
+  "sdn-circuit-request": [
+    ${repeat:tmp.sdn-circuit-req-row_length:
+    {
+        "request-id": ${tmp.sdn-circuit-req-row[${1}].request-id},
+        "source-uid": ${tmp.sdn-circuit-req-row[${1}].source-uid},
+        "action": ${tmp.sdn-circuit-req-row[${1}].action},
+        "request-timestamp": ${tmp.sdn-circuit-req-row[${1}].request-timestamp},
+        "update-timestamp": ${tmp.sdn-circuit-req-row[${1}].update-timestamp},
+        "request-status": ${tmp.sdn-circuit-req-row[${1}].request-status},
+        "processing-status": ${tmp.sdn-circuit-req-row[${1}].processing-status},
+        "reason-code": ${tmp.sdn-circuit-req-row[${1}].reason-code},
+        "reason-message": ${tmp.sdn-circuit-req-row[${1}].reason-message},
+        "customer-code": ${tmp.sdn-circuit-req-row[${1}].customer-code},
+        "bundle-id": ${tmp.sdn-circuit-req-row[${1}].bundle-id},
+        "router-name-1": ${tmp.sdn-circuit-req-row[${1}].router-name-1},
+        "tail-clfi-1": ${tmp.sdn-circuit-req-row[${1}].tail-clfi-1},
+        "srg-1": ${tmp.sdn-circuit-req-row[${1}].srg-1},
+        "router-name-2": ${tmp.sdn-circuit-req-row[${1}].router-name-2},
+        "tail-clfi-2": ${tmp.sdn-circuit-req-row[${1}].tail-clfi-2},
+        "srg-2": ${tmp.sdn-circuit-req-row[${1}].srg-2},
+        "facility-speed": ${tmp.sdn-circuit-req-row[${1}].facility-speed},
+        "facility-speed-units": ${tmp.sdn-circuit-req-row[${1}].facility-speed-units},
+        "facility-type": ${tmp.sdn-circuit-req-row[${1}].facility-type},
+        "service-clfi": ${tmp.sdn-circuit-req-row[${1}].service-clfi},
+        "clci": ${tmp.sdn-circuit-req-row[${1}].clci},
+        "wavelength-purpose": ${tmp.sdn-circuit-req-row[${1}].wavelength-purpose},
+        "activate-setting": ${tmp.sdn-circuit-req-row[${1}].activate-setting},
+        "apply-date": ${tmp.sdn-circuit-req-row[${1}].apply-date},
+        "run-id": ${tmp.sdn-circuit-req-row[${1}].run-id},
+        "hostname": ${tmp.sdn-circuit-req-row[${1}].hostname},
+        "algo-request-reason": ${tmp.sdn-circuit-req-row[${1}].algo-request-reason}
+    },
+   }
+   ]
+}
