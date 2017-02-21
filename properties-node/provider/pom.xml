@@ -4,10 +4,10 @@
 	<parent>
 		<groupId>org.openecomp.sdnc.plugins</groupId>
 		<artifactId>properties-node</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<groupId>org.openecomp.sdnc.plugins</groupId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<artifactId>properties-node-provider</artifactId>
 	<packaging>bundle</packaging>
 	<name>Properties Node - Provider</name>
