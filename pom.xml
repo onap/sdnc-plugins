@@ -81,31 +81,6 @@
 			</build>
 
 		</profile>
-		<profile>
-			<id>staging</id>
-			<activation>
-				<property>
-					<name>!no-staging</name>
-				</property>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.sonatype.plugins</groupId>
-							<artifactId>nexus-staging-maven-plugin</artifactId>
-							<version>1.6.7</version>
-							<extensions>true</extensions>
-							<configuration>
-								<nexusUrl>https://${openecomp.nexus.host}</nexusUrl>
-								<stagingProfileId>${openecomp.nexus.staging.profile-id}</stagingProfileId>
-								<serverId>${openecomp.nexus.staging.server-id}</serverId>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
 
 	</profiles>
 	<build>
@@ -116,6 +91,17 @@
 				<version>2.17</version>
 				<configuration>
 					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<nexusUrl>https://${openecomp.nexus.host}</nexusUrl>
+					<stagingProfileId>${openecomp.nexus.staging.profile-id}</stagingProfileId>
+					<serverId>${openecomp.nexus.staging.server-id}</serverId>
 				</configuration>
 			</plugin>
 		</plugins>
