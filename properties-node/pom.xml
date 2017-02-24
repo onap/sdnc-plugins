@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.openecomp.sdnc.plugins</groupId>
 		<artifactId>sdnc-plugins</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -11,7 +11,7 @@
 
 	<groupId>org.openecomp.sdnc.plugins</groupId>
 	<artifactId>properties-node</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<name>Properties Node</name>
 	<description>This is an implementation of DG Execute Node that reads property file and
