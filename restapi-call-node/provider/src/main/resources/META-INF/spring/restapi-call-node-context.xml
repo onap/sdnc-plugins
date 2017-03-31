@@ -4,7 +4,7 @@
   openECOMP : SDN-C
   ================================================================================
   Copyright (C) 2017 AT&T Intellectual Property. All rights
-              reserved.
+  						reserved.
   ================================================================================
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,7 +26,12 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
         
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations" value="file:${SDNC_CONFIG_DIR}/ueb.properties" />
+	        <property name="locations">
+            <list>
+                <value>file:${SDNC_CONFIG_DIR}/ueb.properties</value>
+                <value>file:${SDNC_CONFIG_DIR}/dme2.properties</value>
+            </list>
+        </property> 
 		<property name="ignoreResourceNotFound" value="true" />
 		<property name="ignoreUnresolvablePlaceholders" value="true" />
 	</bean>
@@ -35,6 +40,10 @@
 
 	<bean id="restapiCallNode" class="org.openecomp.sdnc.restapicall.RestapiCallNode">
 		<property name="uebServers" value="${servers}" />
+		<property name="retryPolicyStore" ref="retryPolicyStore"/>
 	</bean>
 
+	<bean id="retryPolicyStore" class="org.openecomp.sdnc.restapicall.RetryPolicyStore">
+		<property name="proxyServers" value="${proxyUrl}" />
+	</bean>
 </beans>

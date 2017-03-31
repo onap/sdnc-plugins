@@ -3,7 +3,7 @@
  * openECOMP : SDN-C
  * ================================================================================
  * Copyright (C) 2017 AT&T Intellectual Property. All rights
- *             reserved.
+ * 						reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 package org.openecomp.sdnc.restapicall;
 
 import java.io.FileInputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.net.ssl.HostnameVerifier;
@@ -40,10 +42,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 
 import org.openecomp.sdnc.sli.SvcLogicContext;
 import org.openecomp.sdnc.sli.SvcLogicException;
 import org.openecomp.sdnc.sli.SvcLogicJavaPlugin;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,12 +65,61 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 
 	private String uebServers;
 	private String defaultUebTemplateFileName = "/opt/bvc/restapi/templates/default-ueb-message.json";
+	public RetryPolicyStore retryPolicyStore;
 
+	public RetryPolicyStore getRetryPolicyStore() {
+		return retryPolicyStore;
+	}
+
+	public void setRetryPolicyStore(RetryPolicyStore retryPolicyStore) {
+		this.retryPolicyStore = retryPolicyStore;
+	}
+
+	public RestapiCallNode() {
+
+	}
+
+	 /**
+     * Allows Directed Graphs  the ability to interact with REST APIs.
+     * @param parameters HashMap<String,String> of parameters passed by the DG to this function
+     * <table border="1">
+     *  <thead><th>parameter</th><th>Mandatory/Optional</th><th>description</th><th>example values</th></thead>
+     *  <tbody>
+     *      <tr><td>templateFileName</td><td>Optional</td><td>full path to template file that can be used to build a request</td><td>/sdncopt/bvc/restapi/templates/vnf_service-configuration-operation_minimal.json</td></tr>
+     *      <tr><td>restapiUrl</td><td>Mandatory</td><td>url to send the request to</td><td>https://sdncodl:8543/restconf/operations/L3VNF-API:create-update-vnf-request</td></tr>
+     *      <tr><td>restapiUser</td><td>Optional</td><td>user name to use for http basic authentication</td><td>sdnc_ws</td></tr>
+     *      <tr><td>restapiPassword</td><td>Optional</td><td>unencrypted password to use for http basic authentication</td><td>plain_password</td></tr>
+     *      <tr><td>contentType</td><td>Optional</td><td>http content type to set in the http header</td><td>usually application/json or application/xml</td></tr>
+     *      <tr><td>format</td><td>Optional</td><td>should match request body format</td><td>json or xml</td></tr>
+     *      <tr><td>httpMethod</td><td>Optional</td><td>http method to use when sending the request</td><td>get post put delete patch</td></tr>
+     *      <tr><td>responsePrefix</td><td>Optional</td><td>location the response will be written to in context memory</td><td>tmp.restapi.result</td></tr>
+     *      <tr><td>listName[i]</td><td>Optional</td><td>Used for processing XML responses with repeating elements.</td>vpn-information.vrf-details<td></td></tr>
+     *      <tr><td>skipSending</td><td>Optional</td><td></td><td>true or false</td></tr>
+     *      <tr><td>convertResponse </td><td>Optional</td><td>whether the response should be converted</td><td>true or false</td></tr>
+     *      <tr><td>customHttpHeaders</td><td>Optional</td><td>a list additional http headers to be passed in, follow the format in the example</td><td>X-CSI-MessageId=messageId,headerFieldName=headerFieldValue</td></tr>
+     *      <tr><td>dumpHeaders</td><td>Optional</td><td>when true writes http header content to context memory</td><td>true or false</td></tr>
+     *      <tr><td>partner</td><td>Optional</td><td>needed for DME2 calls</td><td>dme2proxy</td></tr>
+     *  </tbody>
+     * </table>
+     * @param ctx Reference to context memory
+     * @throws SvcLogicException
+     * @since 11.0.2
+     * @see String#split(String, int)
+     */
 	public void sendRequest(Map<String, String> paramMap, SvcLogicContext ctx) throws SvcLogicException {
+		sendRequest(paramMap, ctx, null);
+	}
+
+	public void sendRequest(Map<String, String> paramMap, SvcLogicContext ctx, Integer retryCount)
+	        throws SvcLogicException {
+
+		RetryPolicy retryPolicy = null;
 		HttpResponse r = null;
 		try {
 			Param p = getParameters(paramMap);
-
+			if (p.partner != null) {
+				retryPolicy = retryPolicyStore.getRetryPolicy(p.partner);
+			}
 			String pp = p.responsePrefix != null ? p.responsePrefix + '.' : "";
 
 			String req = null;
@@ -76,6 +129,12 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 			}
 			r = sendHttpRequest(req, p);
 			setResponseStatus(ctx, p.responsePrefix, r);
+
+			if (p.dumpHeaders && r.headers != null) {
+                for (Entry<String, List<String>> a : r.headers.entrySet()) {
+                    ctx.setAttribute(pp + "header." + a.getKey(), StringUtils.join(a.getValue(), ","));
+                }
+            }
 
 			if (r.body != null && r.body.trim().length() > 0) {
 				ctx.setAttribute(pp + "httpResponse", r.body);
@@ -93,13 +152,48 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error sending the request: " + e.getMessage(), e);
+			boolean shouldRetry = false;
+			if (e.getCause() instanceof java.net.SocketException) {
+				shouldRetry = true;
+			}
 
-			r = new HttpResponse();
-			r.code = 500;
-			r.message = e.getMessage();
+			log.error("Error sending the request: " + e.getMessage(), e);
 			String prefix = parseParam(paramMap, "responsePrefix", false, null);
-			setResponseStatus(ctx, prefix, r);
+			if (retryPolicy == null || shouldRetry == false) {
+				setFailureResponseStatus(ctx, prefix, e.getMessage(), r);
+			} else {
+				if (retryCount == null) {
+					retryCount = 0;
+				}
+				String retryMessage = retryCount + " attempts were made out of " + retryPolicy.getMaximumRetries() +
+				        " maximum retries.";
+				log.debug(retryMessage);
+				try {
+					retryCount = retryCount + 1;
+					if (retryCount < retryPolicy.getMaximumRetries() + 1) {
+						URI uri = new URI(paramMap.get("restapiUrl"));
+						String hostname = uri.getHost();
+						String retryString = retryPolicy.getNextHostName((uri.toString()));
+						URI uriTwo = new URI(retryString);
+						URI retryUri = UriBuilder.fromUri(uri).host(uriTwo.getHost()).port(uriTwo.getPort()).scheme(
+						        uriTwo.getScheme()).build();
+						paramMap.put("restapiUrl", retryUri.toString());
+						log.debug("URL was set to " + retryUri.toString());
+						log.debug("Failed to communicate with host " + hostname +
+						        ". Request will be re-attempted using the host " + retryString + ".");
+						log.debug("This is retry attempt " + retryCount + " out of " + retryPolicy.getMaximumRetries());
+						sendRequest(paramMap, ctx, retryCount);
+					} else {
+						log.debug("Maximum retries reached, calling setFailureResponseStatus.");
+						setFailureResponseStatus(ctx, prefix, e.getMessage(), r);
+					}
+				} catch (Exception ex) {
+					log.error("Could not attempt retry.", ex);
+					String retryErrorMessage =
+					        "Retry attempt has failed. No further retry shall be attempted, calling setFailureResponseStatus.";
+					setFailureResponseStatus(ctx, prefix, retryErrorMessage, r);
+				}
+			}
 		}
 
 		if (r != null && r.code >= 300)
@@ -110,8 +204,9 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		Param p = new Param();
 		p.templateFileName = parseParam(paramMap, "templateFileName", false, null);
 		p.restapiUrl = parseParam(paramMap, "restapiUrl", true, null);
-		p.restapiUser = parseParam(paramMap, "restapiUser", true, null);
-		p.restapiPassword = parseParam(paramMap, "restapiPassword", true, null);
+		p.restapiUser = parseParam(paramMap, "restapiUser", false, null);
+		p.restapiPassword = parseParam(paramMap, "restapiPassword", false, null);
+		p.contentType = parseParam(paramMap, "contentType", false, null);
 		p.format = Format.fromString(parseParam(paramMap, "format", false, "json"));
 		p.httpMethod = HttpMethod.fromString(parseParam(paramMap, "httpMethod", false, "post"));
 		p.responsePrefix = parseParam(paramMap, "responsePrefix", false, null);
@@ -125,6 +220,9 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		p.keyStorePassword = parseParam(paramMap, "keyStorePassword", false, null);
 		p.ssl = p.trustStoreFileName != null && p.trustStorePassword != null && p.keyStoreFileName != null &&
 		        p.keyStorePassword != null;
+		p.customHttpHeaders = parseParam(paramMap, "customHttpHeaders", false, null);
+		p.partner = parseParam(paramMap, "partner", false, null);
+	    p.dumpHeaders = Boolean.valueOf(parseParam(paramMap, "dumpHeaders", false, null));
 		return p;
 	}
 
@@ -179,6 +277,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		public String restapiUser;
 		public String restapiPassword;
 		public Format format;
+		public String contentType;
 		public HttpMethod httpMethod;
 		public String responsePrefix;
 		public Set<String> listNameList;
@@ -189,9 +288,12 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		public String trustStoreFileName;
 		public String trustStorePassword;
 		public boolean ssl;
+		public String customHttpHeaders;
+		public String partner;
+	    public Boolean dumpHeaders;
 	}
 
-	private static enum Format {
+	protected static enum Format {
 		JSON, XML;
 
 		public static Format fromString(String s) {
@@ -206,7 +308,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 	}
 
 	private static enum HttpMethod {
-		GET, POST, PUT, DELETE;
+		GET, POST, PUT, DELETE, PATCH;
 
 		public static HttpMethod fromString(String s) {
 			if (s == null)
@@ -219,11 +321,13 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 				return PUT;
 			if (s.equalsIgnoreCase("delete"))
 				return DELETE;
+			if (s.equalsIgnoreCase("patch"))
+				return PATCH;
 			throw new IllegalArgumentException("Invalid value for HTTP Method: " + s);
 		}
 	}
 
-	private String buildXmlJsonRequest(SvcLogicContext ctx, String template, Format format) {
+	protected String buildXmlJsonRequest(SvcLogicContext ctx, String template, Format format) {
 		log.info("Building " + format + " started");
 		long t1 = System.currentTimeMillis();
 
@@ -345,7 +449,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return expandRepeats(ctx, newTemplate.toString(), level + 1);
 	}
 
-	private String readFile(String fileName) throws Exception {
+	protected String readFile(String fileName) throws Exception {
 		byte[] encoded = Files.readAllBytes(Paths.get(fileName));
 		return new String(encoded, "UTF-8");
 	}
@@ -372,7 +476,8 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 
 		Client client = Client.create(config);
 		client.setConnectTimeout(5000);
-		client.addFilter(new HTTPBasicAuthFilter(p.restapiUser, p.restapiPassword));
+		if (p.restapiUser != null)
+			client.addFilter(new HTTPBasicAuthFilter(p.restapiUser, p.restapiPassword));
 		WebResource webResource = client.resource(p.restapiUrl);
 
 		log.info("Sending request:");
@@ -385,16 +490,24 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		if (!p.skipSending) {
 			String tt = p.format == Format.XML ? "application/xml" : "application/json";
 			String tt1 = tt + ";charset=UTF-8";
+			if (p.contentType != null) {
+				tt = p.contentType;
+				tt1 = p.contentType;
+			}
 
-			ClientResponse response = null;
-			if (p.httpMethod == HttpMethod.GET)
-				response = webResource.accept(tt).type(tt1).get(ClientResponse.class);
-			else if (p.httpMethod == HttpMethod.POST)
-				response = webResource.accept(tt).type(tt1).post(ClientResponse.class, request);
-			else if (p.httpMethod == HttpMethod.PUT)
-				response = webResource.accept(tt).type(tt1).put(ClientResponse.class, request);
-			else if (p.httpMethod == HttpMethod.DELETE)
-				response = webResource.accept(tt).type(tt1).delete(ClientResponse.class, request);
+			WebResource.Builder webResourceBuilder = webResource.accept(tt).type(tt1);
+
+            if (p.customHttpHeaders != null && p.customHttpHeaders.length() > 0) {
+                String[] keyValuePairs = p.customHttpHeaders.split(",");
+                for (String singlePair : keyValuePairs) {
+                    int equalPosition = singlePair.indexOf('=');
+                    webResourceBuilder.header(singlePair.substring(0, equalPosition), singlePair.substring(equalPosition + 1, singlePair.length()));
+                }
+            }
+
+            webResourceBuilder.header("X-ECOMP-RequestID",org.slf4j.MDC.get("X-ECOMP-RequestID"));
+
+			ClientResponse response = webResourceBuilder.method(p.httpMethod.toString(), ClientResponse.class, request);
 
 			r.code = response.getStatus();
 			r.headers = response.getHeaders();
@@ -453,6 +566,15 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		public MultivaluedMap<String, String> headers;
 	}
 
+	private void setFailureResponseStatus(SvcLogicContext ctx, String prefix, String errorMessage, HttpResponse r) {
+		r = new HttpResponse();
+		r.code = 500;
+		r.message = errorMessage;
+		String pp = prefix != null ? prefix + '.' : "";
+		ctx.setAttribute(pp + "response-code", String.valueOf(r.code));
+		ctx.setAttribute(pp + "response-message", r.message);
+	}
+
 	private void setResponseStatus(SvcLogicContext ctx, String prefix, HttpResponse r) {
 		String pp = prefix != null ? prefix + '.' : "";
 		ctx.setAttribute(pp + "response-code", String.valueOf(r.code));
@@ -497,8 +619,8 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		FileParam p = new FileParam();
 		p.fileName = parseParam(paramMap, "fileName", true, null);
 		p.url = parseParam(paramMap, "url", true, null);
-		p.user = parseParam(paramMap, "user", true, null);
-		p.password = parseParam(paramMap, "password", true, null);
+		p.user = parseParam(paramMap, "user", false, null);
+		p.password = parseParam(paramMap, "password", false, null);
 		p.httpMethod = HttpMethod.fromString(parseParam(paramMap, "httpMethod", false, "post"));
 		p.responsePrefix = parseParam(paramMap, "responsePrefix", false, null);
 		String skipSendingStr = paramMap.get("skipSending");
@@ -510,7 +632,8 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		Client client = Client.create();
 		client.setConnectTimeout(5000);
 		client.setFollowRedirects(true);
-		client.addFilter(new HTTPBasicAuthFilter(p.user, p.password));
+		if (p.user != null)
+			client.addFilter(new HTTPBasicAuthFilter(p.user, p.password));
 		WebResource webResource = client.resource(p.url);
 
 		log.info("Sending file");
