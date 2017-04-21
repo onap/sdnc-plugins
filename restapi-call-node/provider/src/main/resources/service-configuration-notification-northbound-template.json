@@ -26,7 +26,7 @@
     "response-message": ${service-configuration-notification-input.response-message},
     "ack-final-indicator": ${service-configuration-notification-input.ack-final-indicator},
     "service-information": {
-      "service-type": "SERVICE1",
+      "service-type": ${service-data.service-information.service-type},
       "service-instance-id": ${service-data.service-information.service-instance-id},
       "subscriber-name": ${service-data.service-information.subscriber-name},
       "subscriber-global-id": ${service-data.service-information.subscriber-global-id}

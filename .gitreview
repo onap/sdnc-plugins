@@ -1,4 +1,4 @@
 [gerrit]
-host=gerrit.onap.org
+host=gerrit.openecomp.org
 port=29418
 project=sdnc/plugins.git

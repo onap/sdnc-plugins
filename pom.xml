@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openecomp.sdnc.core</groupId>
 		<artifactId>root</artifactId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.0</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -14,13 +14,13 @@
 	<artifactId>sdnc-plugins</artifactId>
 
 	<name>SDN-C Java Plugins</name>
-	<url>https://wiki.onap.org</url>
+	<url>https://wiki.openecomp.org</url>
 	<description>The SDN-C core components contains the SLI, dblib and root pom</description>
 
 
 	<issueManagement>
 		<system>JIRA</system>
-		<url>https://jira.onap.org/</url>
+		<url>https://jira.openecomp.org/</url>
 	</issueManagement>
 
 
@@ -33,14 +33,14 @@
 
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>https://jenkins.onap.org</url>
+		<url>https://jenkins.openecomp.org</url>
 	</ciManagement>
 
 
 	<distributionManagement>
 		<site>
-			<id>ecomp-site</id>
-			<url>dav:https://${openecomp.nexus.host}/content/sites/site/org/onap/sdnc/${project.artifactId}/${project.version}</url>
+			<id>sdnc-javadoc</id>
+			<url>dav:https://${openecomp.nexus.host}:${openecomp.nexus.port}/repository/sdn-c-javadoc/${project.artifactId}/${project.version}</url>
 		</site>
 	</distributionManagement>
 
