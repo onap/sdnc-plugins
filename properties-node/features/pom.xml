@@ -43,6 +43,7 @@
 		<dependency>
 			<groupId>org.opendaylight.controller</groupId>
 			<artifactId>opendaylight-karaf-empty</artifactId>
+			<version>${odl.karaf.empty.distro.version}</version>
 			<type>zip</type>
 		</dependency>
 
