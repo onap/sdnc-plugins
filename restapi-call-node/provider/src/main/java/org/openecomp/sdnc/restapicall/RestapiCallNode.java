@@ -65,13 +65,13 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 
 	private String uebServers;
 	private String defaultUebTemplateFileName = "/opt/bvc/restapi/templates/default-ueb-message.json";
-	public RetryPolicyStore retryPolicyStore;
+	protected RetryPolicyStore retryPolicyStore;
 
-	public RetryPolicyStore getRetryPolicyStore() {
+	protected RetryPolicyStore getRetryPolicyStore() {
 		return retryPolicyStore;
 	}
 
-	public void setRetryPolicyStore(RetryPolicyStore retryPolicyStore) {
+	protected void setRetryPolicyStore(RetryPolicyStore retryPolicyStore) {
 		this.retryPolicyStore = retryPolicyStore;
 	}
 
@@ -116,7 +116,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		RetryPolicy retryPolicy = null;
 		HttpResponse r = null;
 		try {
-			Param p = getParameters(paramMap);
+			Parameters p = getParameters(paramMap);
 			if (p.partner != null) {
 				retryPolicy = retryPolicyStore.getRetryPolicy(p.partner);
 			}
@@ -200,8 +200,8 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 			throw new SvcLogicException(String.valueOf(r.code) + ": " + r.message);
 	}
 
-	private Param getParameters(Map<String, String> paramMap) throws SvcLogicException {
-		Param p = new Param();
+	protected Parameters getParameters(Map<String, String> paramMap) throws SvcLogicException {
+		Parameters p = new Parameters();
 		p.templateFileName = parseParam(paramMap, "templateFileName", false, null);
 		p.restapiUrl = parseParam(paramMap, "restapiUrl", true, null);
 		p.restapiUser = parseParam(paramMap, "restapiUser", false, null);
@@ -226,7 +226,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return p;
 	}
 
-	private Set<String> getListNameList(Map<String, String> paramMap) {
+	protected Set<String> getListNameList(Map<String, String> paramMap) {
 		Set<String> ll = new HashSet<String>();
 		for (String key : paramMap.keySet())
 			if (key.startsWith("listName"))
@@ -234,7 +234,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return ll;
 	}
 
-	private String parseParam(Map<String, String> paramMap, String name, boolean required, String def)
+	protected String parseParam(Map<String, String> paramMap, String name, boolean required, String def)
 	        throws SvcLogicException {
 		String s = paramMap.get(name);
 
@@ -268,63 +268,6 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 
 		log.info("Parameter " + name + ": [" + value + "]");
 		return value;
-	}
-
-	private static class Param {
-
-		public String templateFileName;
-		public String restapiUrl;
-		public String restapiUser;
-		public String restapiPassword;
-		public Format format;
-		public String contentType;
-		public HttpMethod httpMethod;
-		public String responsePrefix;
-		public Set<String> listNameList;
-		public boolean skipSending;
-		public boolean convertResponse;
-		public String keyStoreFileName;
-		public String keyStorePassword;
-		public String trustStoreFileName;
-		public String trustStorePassword;
-		public boolean ssl;
-		public String customHttpHeaders;
-		public String partner;
-	    public Boolean dumpHeaders;
-	}
-
-	protected static enum Format {
-		JSON, XML;
-
-		public static Format fromString(String s) {
-			if (s == null)
-				return null;
-			if (s.equalsIgnoreCase("json"))
-				return JSON;
-			if (s.equalsIgnoreCase("xml"))
-				return XML;
-			throw new IllegalArgumentException("Invalid value for format: " + s);
-		}
-	}
-
-	private static enum HttpMethod {
-		GET, POST, PUT, DELETE, PATCH;
-
-		public static HttpMethod fromString(String s) {
-			if (s == null)
-				return null;
-			if (s.equalsIgnoreCase("get"))
-				return GET;
-			if (s.equalsIgnoreCase("post"))
-				return POST;
-			if (s.equalsIgnoreCase("put"))
-				return PUT;
-			if (s.equalsIgnoreCase("delete"))
-				return DELETE;
-			if (s.equalsIgnoreCase("patch"))
-				return PATCH;
-			throw new IllegalArgumentException("Invalid value for HTTP Method: " + s);
-		}
 	}
 
 	protected String buildXmlJsonRequest(SvcLogicContext ctx, String template, Format format) {
@@ -383,7 +326,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return req;
 	}
 
-	private String expandRepeats(SvcLogicContext ctx, String template, int level) {
+	protected String expandRepeats(SvcLogicContext ctx, String template, int level) {
 		StringBuilder newTemplate = new StringBuilder();
 		int k = 0;
 		while (k < template.length()) {
@@ -454,7 +397,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return new String(encoded, "UTF-8");
 	}
 
-	private HttpResponse sendHttpRequest(String request, Param p) throws Exception {
+	protected HttpResponse sendHttpRequest(String request, Parameters p) throws Exception {
 		ClientConfig config = new DefaultClientConfig();
 		SSLContext ssl = null;
 		if (p.ssl && p.restapiUrl.startsWith("https"))
@@ -528,7 +471,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return r;
 	}
 
-	private SSLContext createSSLContext(Param p) {
+	protected SSLContext createSSLContext(Parameters p) {
 		try {
 			System.setProperty("jsse.enableSNIExtension", "false");
 			System.setProperty("javax.net.ssl.trustStore", p.trustStoreFileName);
@@ -558,15 +501,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return null;
 	}
 
-	private static class HttpResponse {
-
-		public int code;
-		public String message;
-		public String body;
-		public MultivaluedMap<String, String> headers;
-	}
-
-	private void setFailureResponseStatus(SvcLogicContext ctx, String prefix, String errorMessage, HttpResponse r) {
+	protected void setFailureResponseStatus(SvcLogicContext ctx, String prefix, String errorMessage, HttpResponse r) {
 		r = new HttpResponse();
 		r.code = 500;
 		r.message = errorMessage;
@@ -575,7 +510,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		ctx.setAttribute(pp + "response-message", r.message);
 	}
 
-	private void setResponseStatus(SvcLogicContext ctx, String prefix, HttpResponse r) {
+	protected void setResponseStatus(SvcLogicContext ctx, String prefix, HttpResponse r) {
 		String pp = prefix != null ? prefix + '.' : "";
 		ctx.setAttribute(pp + "response-code", String.valueOf(r.code));
 		ctx.setAttribute(pp + "response-message", r.message);
@@ -628,7 +563,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return p;
 	}
 
-	private HttpResponse sendHttpData(byte[] data, FileParam p) {
+	protected HttpResponse sendHttpData(byte[] data, FileParam p) {
 		Client client = Client.create();
 		client.setConnectTimeout(5000);
 		client.setFollowRedirects(true);
@@ -747,7 +682,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return p;
 	}
 
-	private HttpResponse postOnUeb(String request, UebParam p) throws Exception {
+	protected HttpResponse postOnUeb(String request, UebParam p) throws Exception {
 		String[] urls = uebServers.split(" ");
 		for (int i = 0; i < urls.length; i++) {
 			if (!urls[i].endsWith("/"))
@@ -788,7 +723,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 		return r;
 	}
 
-	private void logProperties(Map<String, Object> mm) {
+	protected void logProperties(Map<String, Object> mm) {
 		List<String> ll = new ArrayList<>();
 		for (Object o : mm.keySet())
 			ll.add((String) o);
@@ -799,7 +734,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 			log.info("--- " + name + ": " + String.valueOf(mm.get(name)));
 	}
 
-	private void logHeaders(MultivaluedMap<String, String> mm) {
+	protected void logHeaders(MultivaluedMap<String, String> mm) {
 		log.info("HTTP response headers:");
 
 		if (mm == null)
