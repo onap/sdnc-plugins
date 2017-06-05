@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>org.openecomp.sdnc.plugins</groupId>
 		<artifactId>restapi-call-node</artifactId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.2-SNAPSHOT</version>
 	</parent>
 	<groupId>org.openecomp.sdnc.plugins</groupId>
 	<artifactId>restapi-call-node-provider</artifactId>
-	<version>1.1.1-SNAPSHOT</version>
+	<version>1.1.2-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<name>RESTAPI Call Node - Provider</name>
 	<url>http://maven.apache.org</url>

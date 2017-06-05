@@ -4,10 +4,10 @@
 	<parent>
 		<artifactId>restapi-call-node</artifactId>
 		<groupId>org.openecomp.sdnc.plugins</groupId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.2-SNAPSHOT</version>
 	</parent>
 	<groupId>org.openecomp.sdnc.plugins</groupId>
-	<version>1.1.1-SNAPSHOT</version>
+	<version>1.1.2-SNAPSHOT</version>
 	<artifactId>restapi-call-node-features</artifactId>
 	<name>RESTAPI Call Node - Features</name>
 

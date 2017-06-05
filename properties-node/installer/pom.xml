@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>properties-node</artifactId>
 		<groupId>org.openecomp.sdnc.plugins</groupId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>properties-node-installer</artifactId>
 	<name>Properties node - Karaf  Installer</name>
