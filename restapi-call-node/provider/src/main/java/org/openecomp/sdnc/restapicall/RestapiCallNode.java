@@ -67,7 +67,7 @@ public class RestapiCallNode implements SvcLogicJavaPlugin {
 	private String defaultUebTemplateFileName = "/opt/bvc/restapi/templates/default-ueb-message.json";
 	protected RetryPolicyStore retryPolicyStore;
 
-	protected RetryPolicyStore getRetryPolicyStore() {
+	public RetryPolicyStore getRetryPolicyStore() {
 		return retryPolicyStore;
 	}
 
