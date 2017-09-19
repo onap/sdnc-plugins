@@ -29,7 +29,7 @@
 
 	<feature name='sdnc-restapi-call-node' description="sdnc-restapi-call-node"
 		version='${project.version}'>
-		<feature version="${sdnctl.sli.version}">sdnc-sli</feature>
+		<feature>sdnc-sli</feature>
 		<feature>spring</feature>
 		<feature>spring-dm</feature>
 		<bundle>mvn:com.sun.jersey/jersey-client/${jersey.version}</bundle>
