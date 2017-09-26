@@ -13,7 +13,7 @@
 	<groupId>org.openecomp.sdnc.plugins</groupId>
 	<artifactId>sdnc-plugins</artifactId>
 
-	<name>SDN-C Java Plugins</name>
+	<name>sdnc-plugins</name>
 	<url>https://wiki.openecomp.org</url>
 	<description>The SDN-C core components contains the SLI, dblib and root pom</description>
 
